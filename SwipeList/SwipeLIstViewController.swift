@@ -10,7 +10,7 @@ import UIKit
 
 class SwipeListViewController: UITableViewController {
 
-    let itemArray = ["item one","item two","item three"]
+    var itemArray = ["item one","item two","item three"]
     
     
     override func viewDidLoad() {
@@ -19,7 +19,7 @@ class SwipeListViewController: UITableViewController {
         
     }
     
-    //MARK - TaableViewDataSource methods
+    //MARK - TaableViewDataSource Methods
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
@@ -37,7 +37,7 @@ class SwipeListViewController: UITableViewController {
     
     
     
-    //MARK - TableView Delegate methods
+    //MARK - TableView Delegate Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
@@ -53,6 +53,31 @@ class SwipeListViewController: UITableViewController {
         
     }
     
+    //MARK - Add New Items
     
+    @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
+        
+        var textField = UITextField()
+        
+        
+        let alert = UIAlertController(title: "Add New Item", message: "", preferredStyle: .alert)
+        
+        let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
+            //what will happen when user press this Add Item button(action) on our UIAlert
+            self.itemArray.append(textField.text!)
+            
+            self.tableView.reloadData()
+//            print(textField.text!)
+        }
+        
+        alert.addTextField { (alertTextField) in
+            alertTextField.placeholder = "Enter new item"
+            textField = alertTextField
+            
+        }
+        
+        alert.addAction(action)
+        present(alert, animated: true, completion: nil)
+    }
 }
 
