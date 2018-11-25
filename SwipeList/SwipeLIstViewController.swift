@@ -12,10 +12,14 @@ class SwipeListViewController: UITableViewController {
 
     var itemArray = ["item one","item two","item three"]
     
+    let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
+        if let items = defaults.array(forKey: "SwipeListArray") as? [String] {
+        itemArray = items
+        }
         
     }
     
@@ -65,6 +69,8 @@ class SwipeListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen when user press this Add Item button(action) on our UIAlert
             self.itemArray.append(textField.text!)
+            
+            self.defaults.set(self.itemArray, forKey: "SwipeListArray")
             
             self.tableView.reloadData()
 //            print(textField.text!)
