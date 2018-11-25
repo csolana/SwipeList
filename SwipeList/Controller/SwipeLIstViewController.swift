@@ -10,14 +10,32 @@ import UIKit
 
 class SwipeListViewController: UITableViewController {
 
-    var itemArray = ["item one","item two","item three"]
+    var itemArray = [Item]()
     
     let defaults = UserDefaults.standard
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        if let items = defaults.array(forKey: "SwipeListArray") as? [String] {
+        let newItem = Item()
+        newItem.title = "Item One"
+        itemArray.append(newItem)
+        
+        let newItem2 = Item()
+        newItem2.title = "Item Two"
+        itemArray.append(newItem2)
+        
+        let newItem3 = Item()
+        newItem3.title = "Item Three"
+        itemArray.append(newItem3)
+        
+        let newItem4 = Item()
+        newItem4.title = "Item Four"
+        itemArray.append(newItem4)
+        
+        
+        
+        if let items = defaults.array(forKey: "SwipeListArray") as? [Item] {
         itemArray = items
         }
         
@@ -27,8 +45,18 @@ class SwipeListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
+        let item = itemArray[indexPath.row]
+        
+        
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
-        cell.textLabel?.text = itemArray[indexPath.row]
+        cell.textLabel?.text = item.title
+        
+        
+        //Tenary operator
+        //value = condition ? valueIftrue : valueIfFalse
+        cell.accessoryType = item.done ? .checkmark : .none
+        
+        
         return cell
         
     }
@@ -44,13 +72,11 @@ class SwipeListViewController: UITableViewController {
     //MARK - TableView Delegate Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
-        
+        //if is true becomes false and if false becomes true
+        itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+    
 
-        if tableView.cellForRow(at: indexPath)?.accessoryType == .checkmark {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .none
-        } else {
-            tableView.cellForRow(at: indexPath)?.accessoryType = .checkmark
-        }
+        tableView.reloadData()
         
         tableView.deselectRow(at: indexPath, animated: true)
     
@@ -68,7 +94,10 @@ class SwipeListViewController: UITableViewController {
         
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen when user press this Add Item button(action) on our UIAlert
-            self.itemArray.append(textField.text!)
+            
+            let newItem = Item()
+            newItem.title = textField.text!
+            self.itemArray.append(newItem)
             
             self.defaults.set(self.itemArray, forKey: "SwipeListArray")
             
