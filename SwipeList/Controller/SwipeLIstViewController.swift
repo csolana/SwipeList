@@ -7,23 +7,31 @@
 //
 
 import UIKit
+import CoreData
 
 class SwipeListViewController: UITableViewController {
 
     var itemArray = [Item]()
-    
-    let dataFilePath = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask).first?.appendingPathComponent("Items.plist")
+   
+    let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
-    
-        print(dataFilePath!)
         
+        
+    print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
+        
+
         loadItems()
         
     }
     
     //MARK - TaableViewDataSource Methods
+    
+    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
+        
+        return itemArray.count
+    }
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         
@@ -44,18 +52,17 @@ class SwipeListViewController: UITableViewController {
     }
     
     
-    override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        
-        return itemArray.count
-    }
-    
-    
-    
+
+
     //MARK - TableView Delegate Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        
         //if is true becomes false and if false becomes true
         itemArray[indexPath.row].done = !itemArray[indexPath.row].done
+        
+//        context.delete(itemArray[indexPath.row])
+//        itemArray.remove(at: indexPath.row)
         
         saveItems()
         
@@ -76,8 +83,11 @@ class SwipeListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen when user press this Add Item button(action) on our UIAlert
             
-            let newItem = Item()
+            
+            
+            let newItem = Item(context: self.context)
             newItem.title = textField.text!
+            newItem.done = false
             self.itemArray.append(newItem)
             
 
@@ -99,13 +109,10 @@ class SwipeListViewController: UITableViewController {
     
     func saveItems() {
         
-        let encoder = PropertyListEncoder()
-        
         do {
-            let data = try encoder.encode(itemArray)
-            try data.write(to: dataFilePath!)
+       try context.save()
         } catch {
-            print("error encoding item array, \(error)")
+           print("Error saving context \(error)")
             
         }
         
@@ -114,18 +121,17 @@ class SwipeListViewController: UITableViewController {
     }
     
     func loadItems() {
-        
-       
-        if let data = try? Data(contentsOf: dataFilePath!) {
-            let decoder = PropertyListDecoder()
-            do {
-            itemArray = try decoder.decode([Item].self, from: data)
+        let request: NSFetchRequest<Item> = Item.fetchRequest()
+
+        do {
+       itemArray = try context.fetch(request)
         } catch {
-            print("error decoding item array, \(error)")
+           print("error fetching data from context \(error)")
         }
-        }
+        
     }
     
     
 }
+
 
