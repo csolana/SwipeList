@@ -26,7 +26,7 @@ class SwipeListViewController: UITableViewController {
         
     }
     
-    //MARK - TaableViewDataSource Methods
+    //MARK: - TableViewDataSource Methods
     
     override func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
         
@@ -54,7 +54,7 @@ class SwipeListViewController: UITableViewController {
     
 
 
-    //MARK - TableView Delegate Methods
+    //MARK: - TableView Delegate Methods
     
     override func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         
@@ -71,7 +71,7 @@ class SwipeListViewController: UITableViewController {
         
     }
     
-    //MARK - Add New Items
+    //MARK: - Add New Items
     
     @IBAction func addButtonPressed(_ sender: UIBarButtonItem) {
         
@@ -131,6 +131,35 @@ class SwipeListViewController: UITableViewController {
         
     }
     
+    
+    
+}
+
+//MARK: - Search bar methods
+
+extension SwipeListViewController: UISearchBarDelegate {
+    
+    func searchBarSearchButtonClicked(_ searchBar: UISearchBar) {
+       
+        let request : NSFetchRequest<Item> = Item.fetchRequest()
+        
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        
+        request.predicate = predicate
+        
+        let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)
+        
+        request.sortDescriptors = [sortDescriptor]
+        
+        do {
+            itemArray = try context.fetch(request)
+        } catch {
+            print("error fetching data from context \(error)")
+        }
+        
+        tableView.reloadData()
+
+    }
     
 }
 
