@@ -120,17 +120,17 @@ class SwipeListViewController: UITableViewController {
         
     }
     
-    func loadItems() {
-        let request: NSFetchRequest<Item> = Item.fetchRequest()
-
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+       
         do {
        itemArray = try context.fetch(request)
         } catch {
            print("error fetching data from context \(error)")
         }
         
+         tableView.reloadData()
+        
     }
-    
     
     
 }
@@ -143,22 +143,27 @@ extension SwipeListViewController: UISearchBarDelegate {
        
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         
-        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
-        request.predicate = predicate
+        request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
-        let sortDescriptor = NSSortDescriptor(key: "title", ascending: true)
-        
-        request.sortDescriptors = [sortDescriptor]
-        
-        do {
-            itemArray = try context.fetch(request)
-        } catch {
-            print("error fetching data from context \(error)")
+        loadItems(with: request)
+    
+       
+    }
+    
+    func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
+     
+        if searchBar.text?.count == 0 {
+            
+            loadItems()
+            
+            DispatchQueue.main.async {
+                searchBar.resignFirstResponder()
+            }
+            
         }
-        
-        tableView.reloadData()
-
+     
     }
     
 }
