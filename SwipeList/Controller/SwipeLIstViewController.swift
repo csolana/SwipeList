@@ -12,17 +12,22 @@ import CoreData
 class SwipeListViewController: UITableViewController {
 
     var itemArray = [Item]()
+    
+    var selectedCategory : Category? {
+        didSet{
+             loadItems()
+        }
+    }
+    
    
     let context = (UIApplication.shared.delegate as! AppDelegate).persistentContainer.viewContext
     
     override func viewDidLoad() {
         super.viewDidLoad()
         
-        
-    print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
-        
+        print(FileManager.default.urls(for: .documentDirectory, in: .userDomainMask))
 
-        loadItems()
+       
         
     }
     
@@ -37,22 +42,17 @@ class SwipeListViewController: UITableViewController {
         
         let item = itemArray[indexPath.row]
         
-        
         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
         cell.textLabel?.text = item.title
-        
         
         //Tenary operator
         //value = condition ? valueIftrue : valueIfFalse
         cell.accessoryType = item.done ? .checkmark : .none
         
-        
         return cell
         
     }
     
-    
-
 
     //MARK: - TableView Delegate Methods
     
@@ -83,11 +83,10 @@ class SwipeListViewController: UITableViewController {
         let action = UIAlertAction(title: "Add Item", style: .default) { (action) in
             //what will happen when user press this Add Item button(action) on our UIAlert
             
-            
-            
             let newItem = Item(context: self.context)
             newItem.title = textField.text!
             newItem.done = false
+            newItem.parentCategory = self.selectedCategory
             self.itemArray.append(newItem)
             
 
@@ -113,17 +112,25 @@ class SwipeListViewController: UITableViewController {
        try context.save()
         } catch {
            print("Error saving context \(error)")
-            
         }
         
         self.tableView.reloadData()
         
     }
     
-    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest()) {
+    func loadItems(with request: NSFetchRequest<Item> = Item.fetchRequest(), predicate: NSPredicate? = nil) {
+        
+        let categoryPredecate = NSPredicate(format: "parentCategory.name MATCHES %@", selectedCategory!.name!)
+        
+        if let additionalPredicate = predicate {
+            request.predicate = NSCompoundPredicate(andPredicateWithSubpredicates: [categoryPredecate, additionalPredicate])
+        } else {
+            request.predicate = categoryPredecate
+        }
+        
        
         do {
-       itemArray = try context.fetch(request)
+           itemArray = try context.fetch(request)
         } catch {
            print("error fetching data from context \(error)")
         }
@@ -143,12 +150,11 @@ extension SwipeListViewController: UISearchBarDelegate {
        
         let request : NSFetchRequest<Item> = Item.fetchRequest()
         
-        request.predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
+        let predicate = NSPredicate(format: "title CONTAINS[cd] %@", searchBar.text!)
         
         request.sortDescriptors = [NSSortDescriptor(key: "title", ascending: true)]
         
-        loadItems(with: request)
-    
+        loadItems(with: request, predicate: predicate)
        
     }
     
