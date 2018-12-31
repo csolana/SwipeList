@@ -9,7 +9,7 @@
 import UIKit
 import RealmSwift
 
-class SwipeListViewController: UITableViewController {
+class SwipeListViewController: SwipeTableViewController {
 
     var todoItems: Results<Item>?
     
@@ -41,7 +41,8 @@ class SwipeListViewController: UITableViewController {
     
     override func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
       
-         let cell = tableView.dequeueReusableCell(withIdentifier: "ToDoItemCell", for: indexPath)
+        let cell = super.tableView(tableView, cellForRowAt: indexPath)
+        
         
         if let item = todoItems?[indexPath.row] {
             
@@ -132,7 +133,22 @@ class SwipeListViewController: UITableViewController {
          tableView.reloadData()
     }
     
+    override func updateModel(at indexPath: IndexPath) {
+        
+        if let itemForDeletion = todoItems?[indexPath.row] {
+            
+            do {
+                try realm.write {
+                    realm.delete(itemForDeletion)
+                }
+            } catch {
+                print("Error Deleting Item \(error)")
+            }
+        }
+    }
+    
 }
+
 
 //MARK: - Search bar methods
 
@@ -144,7 +160,7 @@ extension SwipeListViewController: UISearchBarDelegate {
         
         tableView.reloadData()
          }
-
+    
    
 
     func searchBar(_ searchBar: UISearchBar, textDidChange searchText: String) {
